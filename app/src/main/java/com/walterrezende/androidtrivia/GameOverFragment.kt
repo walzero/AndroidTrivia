@@ -16,38 +16,42 @@
 
 package com.walterrezende.androidtrivia
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import com.walterrezende.androidtrivia.GameOverFragmentDirections.actionGameOverFragmentToGameFragment
 import com.walterrezende.androidtrivia.databinding.FragmentGameOverBinding
 import com.walterrezende.androidtrivia.extensions.setOnClickNavigation
 
-class GameOverFragment : Fragment() {
+class GameOverFragment : BaseGameFragment<FragmentGameOverBinding>() {
 
-    private val bundledArgs by lazy { GameOverFragmentArgs.fromBundle(requireArguments()) }
-
-    private val numCorrect by lazy { bundledArgs.numCorrect }
-    private val numQuestions by lazy { bundledArgs.numQuestions }
-
-    private val tryAgainAction by lazy {
-        GameOverFragmentDirections.actionGameOverFragmentToGameFragment()
+    override val hasOptionMenu: Boolean = true
+    override val layoutIdRes: Int = R.layout.fragment_game_over
+    override val onViewInflated = { binding: FragmentGameOverBinding -> onBinding(binding) }
+    override val onOptionsMenuInflated: (Menu, MenuInflater) -> Unit = { menu, _ ->
+        hideShareMenuIfNotShareable(menu)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    private val bundledArgs by lazy { GameOverFragmentArgs.fromBundle(requireArguments()) }
+    private val tryAgainAction by lazy { actionGameOverFragmentToGameFragment() }
 
-        // Inflate the layout for this fragment
-        val binding: FragmentGameOverBinding = DataBindingUtil.inflate(
-            inflater, R.layout.fragment_game_over, container, false
-        )
-
+    private fun onBinding(binding: FragmentGameOverBinding) {
         binding.tryAgainButton.setOnClickNavigation(tryAgainAction)
+    }
 
-        return binding.root
+    override fun onOptionsItemSelected(
+        item: MenuItem
+    ): Boolean = bundledArgs.run {
+        when (item.itemId) {
+            R.id.share -> scoreHandler.shareScore(requireActivity(), numCorrect, numQuestions)
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun hideShareMenuIfNotShareable(menu: Menu) {
+        if (scoreHandler.scoreIsShareable(requireActivity())) {
+            menu.findItem(R.id.share)?.isVisible = false
+        }
     }
 }

@@ -16,17 +16,15 @@
 
 package com.walterrezende.androidtrivia
 
-import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import com.walterrezende.androidtrivia.databinding.FragmentGameBinding
 import com.walterrezende.androidtrivia.extensions.navigateTo
 
-class GameFragment : Fragment() {
+class GameFragment : BaseGameFragment<FragmentGameBinding>() {
+
+    override val onViewInflated = { binding: FragmentGameBinding -> onBinding(binding) }
+    override val layoutIdRes: Int = R.layout.fragment_game
 
     private val wonDirection by lazy {
         GameFragmentDirections.actionGameFragmentToGameWonFragment(
@@ -103,17 +101,8 @@ class GameFragment : Fragment() {
     private var questionIndex = 0
     private val numQuestions = Math.min((questions.size + 1) / 2, 3)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-
-        // Inflate the layout for this fragment
-        val binding = DataBindingUtil.inflate<FragmentGameBinding>(
-            inflater, R.layout.fragment_game, container, false
-        )
-
-        // Shuffles the questions and sets the question index to the first question.
+    private fun onBinding(binding: FragmentGameBinding) {
+// Shuffles the questions and sets the question index to the first question.
         randomizeQuestions()
 
         // Bind this fragment class to the layout
@@ -121,34 +110,35 @@ class GameFragment : Fragment() {
 
         // Set the onClickListener for the submitButton
         binding.submitButton.setOnClickListener @Suppress("UNUSED_ANONYMOUS_PARAMETER")
-        { view: View ->
-            val checkedId = binding.questionRadioGroup.checkedRadioButtonId
-            // Do nothing if nothing is checked (id == -1)
-            if (-1 != checkedId) {
-                var answerIndex = 0
-                when (checkedId) {
-                    R.id.secondAnswerRadioButton -> answerIndex = 1
-                    R.id.thirdAnswerRadioButton -> answerIndex = 2
-                    R.id.fourthAnswerRadioButton -> answerIndex = 3
-                }
-                // The first answer in the original question is always the correct one, so if our
-                // answer matches, we have the correct answer.
-                if (answers[answerIndex] == currentQuestion.answers[0]) {
-                    questionIndex++
-                    // Advance to the next question
-                    if (questionIndex < numQuestions) {
-                        currentQuestion = questions[questionIndex]
-                        setQuestion()
-                        binding.invalidateAll()
-                    } else {
-                        navigateTo(wonDirection)
-                    }
+        { view: View -> onSubmitClicked(binding) }
+    }
+
+    private fun onSubmitClicked(binding: FragmentGameBinding) {
+        val checkedId = binding.questionRadioGroup.checkedRadioButtonId
+        // Do nothing if nothing is checked (id == -1)
+        if (-1 != checkedId) {
+            var answerIndex = 0
+            when (checkedId) {
+                R.id.secondAnswerRadioButton -> answerIndex = 1
+                R.id.thirdAnswerRadioButton -> answerIndex = 2
+                R.id.fourthAnswerRadioButton -> answerIndex = 3
+            }
+            // The first answer in the original question is always the correct one, so if our
+            // answer matches, we have the correct answer.
+            if (answers[answerIndex] == currentQuestion.answers[0]) {
+                questionIndex++
+                // Advance to the next question
+                if (questionIndex < numQuestions) {
+                    currentQuestion = questions[questionIndex]
+                    setQuestion()
+                    binding.invalidateAll()
                 } else {
-                    navigateTo(lostDirection)
+                    navigateTo(wonDirection)
                 }
+            } else {
+                navigateTo(lostDirection)
             }
         }
-        return binding.root
     }
 
     // randomize the questions and set the first question

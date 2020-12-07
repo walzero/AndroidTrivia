@@ -1,30 +1,21 @@
 package com.walterrezende.androidtrivia
 
-import android.os.Bundle
-import android.view.*
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.walterrezende.androidtrivia.databinding.FragmentTitleBinding
 import com.walterrezende.androidtrivia.extensions.setOnClickNavigation
 
-class TitleFragment : Fragment() {
+class TitleFragment : BaseGameFragment<FragmentTitleBinding>() {
+
+    override val onViewInflated = { binding: FragmentTitleBinding -> onBinding(binding) }
+    override val hasOptionMenu: Boolean = true
+    override val layoutIdRes: Int = R.layout.fragment_title
 
     private val titleToGameAction by lazy {
         TitleFragmentDirections.actionTitleFragmentToGameFragment()
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val binding: FragmentTitleBinding = inflateView(container)
-
-        binding.playButton.setOnClickNavigation(titleToGameAction)
-        setHasOptionsMenu(true)
-        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -40,11 +31,7 @@ class TitleFragment : Fragment() {
         NavigationUI.onNavDestinationSelected(item, findNavController())
     } ?: false
 
-    private fun inflateView(container: ViewGroup?): FragmentTitleBinding =
-        DataBindingUtil.inflate(
-            layoutInflater,
-            R.layout.fragment_title,
-            container,
-            false
-        )
+    private fun onBinding(binding: FragmentTitleBinding) {
+        binding.playButton.setOnClickNavigation(titleToGameAction)
+    }
 }

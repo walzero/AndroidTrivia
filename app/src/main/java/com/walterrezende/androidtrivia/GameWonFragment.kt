@@ -16,46 +16,43 @@
 
 package com.walterrezende.androidtrivia
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Toast
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import com.walterrezende.androidtrivia.GameWonFragmentDirections.actionGameWonFragmentToGameFragment
 import com.walterrezende.androidtrivia.databinding.FragmentGameWonBinding
 import com.walterrezende.androidtrivia.extensions.setOnClickNavigation
 
+class GameWonFragment : BaseGameFragment<FragmentGameWonBinding>() {
 
-class GameWonFragment : Fragment() {
-
-    private val bundledArgs by lazy { GameWonFragmentArgs.fromBundle(requireArguments()) }
-
-    private val numCorrect by lazy { bundledArgs.numCorrect }
-    private val numQuestions by lazy { bundledArgs.numQuestions }
-
-    private val tryAgainAction by lazy {
-        GameWonFragmentDirections.actionGameWonFragmentToGameFragment()
+    override val hasOptionMenu: Boolean = true
+    override val layoutIdRes: Int = R.layout.fragment_game_won
+    override val menuIdRes: Int = R.menu.winner_menu
+    override val onViewInflated = { binding: FragmentGameWonBinding -> onBinding(binding) }
+    override val onOptionsMenuInflated: (Menu, MenuInflater) -> Unit = { menu, _ ->
+        hideShareMenuIfNotShareable(menu)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    private val bundledArgs by lazy { GameWonFragmentArgs.fromBundle(requireArguments()) }
+    private val tryAgainAction by lazy { actionGameWonFragmentToGameFragment() }
 
-        // Inflate the layout for this fragment
-        val binding: FragmentGameWonBinding = DataBindingUtil.inflate(
-            inflater, R.layout.fragment_game_won, container, false
-        )
-
-        Toast.makeText(
-            requireContext(),
-            "questions: $numQuestions; right: $numCorrect",
-            Toast.LENGTH_SHORT
-        ).show()
-
+    private fun onBinding(binding: FragmentGameWonBinding) {
         binding.nextMatchButton.setOnClickNavigation(tryAgainAction)
+    }
 
-        return binding.root
+    override fun onOptionsItemSelected(
+        item: MenuItem
+    ): Boolean = with(bundledArgs) {
+        when (item.itemId) {
+            R.id.share -> scoreHandler.shareScore(requireActivity(), numCorrect, numQuestions)
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun hideShareMenuIfNotShareable(menu: Menu) = scoreHandler.run{
+        if (scoreHandler.scoreIsShareable(requireActivity())) {
+            menu.findItem(R.id.share)?.isVisible = false
+        }
     }
 }
