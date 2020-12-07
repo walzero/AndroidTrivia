@@ -27,6 +27,7 @@ class GameOverFragment : BaseGameFragment<FragmentGameOverBinding>() {
 
     override val hasOptionMenu: Boolean = true
     override val layoutIdRes: Int = R.layout.fragment_game_over
+    override val menuIdRes: Int = R.menu.winner_menu
     override val onViewInflated = { binding: FragmentGameOverBinding -> onBinding(binding) }
     override val onOptionsMenuInflated: (Menu, MenuInflater) -> Unit = { menu, _ ->
         hideShareMenuIfNotShareable(menu)
