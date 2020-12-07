@@ -20,17 +20,42 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.walterrezende.androidtrivia.databinding.FragmentGameWonBinding
+import com.walterrezende.androidtrivia.extensions.setOnClickNavigation
 
 
 class GameWonFragment : Fragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+
+    private val bundledArgs by lazy { GameWonFragmentArgs.fromBundle(requireArguments()) }
+
+    private val numCorrect by lazy { bundledArgs.numCorrect }
+    private val numQuestions by lazy { bundledArgs.numQuestions }
+
+    private val tryAgainAction by lazy {
+        GameWonFragmentDirections.actionGameWonFragmentToGameFragment()
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+
         // Inflate the layout for this fragment
         val binding: FragmentGameWonBinding = DataBindingUtil.inflate(
-                inflater, R.layout.fragment_game_won, container, false)
+            inflater, R.layout.fragment_game_won, container, false
+        )
+
+        Toast.makeText(
+            requireContext(),
+            "questions: $numQuestions; right: $numCorrect",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        binding.nextMatchButton.setOnClickNavigation(tryAgainAction)
+
         return binding.root
     }
 }
